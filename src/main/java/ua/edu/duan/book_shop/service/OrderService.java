@@ -1,9 +1,9 @@
 package ua.edu.duan.book_shop.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ua.edu.duan.book_shop.dto.CreateOrderDto;
 import ua.edu.duan.book_shop.dto.OrderDto;
@@ -15,6 +15,7 @@ import ua.edu.duan.book_shop.repository.WarehouseRepository;
 import ua.edu.duan.book_shop.state.BaseOrderStateProcessor;
 import ua.edu.duan.book_shop.state.BookOrderStateProcessorProvider;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +25,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final WarehouseRepository warehouseRepository;
     private final BookOrderStateProcessorProvider bookOrderStateProcessorProvider;
+
+    public List<OrderDto> getOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::convert)
+                .toList();
+    }
 
     public OrderDto createOrder(CreateOrderDto createOrderDto) {
         Optional<WarehouseEntity> item = warehouseRepository.findById(createOrderDto.getItemId());
@@ -63,6 +71,11 @@ public class OrderService {
         }
 
         return convert(order);
+    }
+
+    public String deleteOrder(long orderId) {
+        orderRepository.deleteById(orderId);
+        return "Order was deleted";
     }
 
     private OrderDto convert(OrderEntity orderEntity) {
